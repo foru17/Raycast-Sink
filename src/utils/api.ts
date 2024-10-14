@@ -1,0 +1,157 @@
+import https from "https";
+import { URL } from "url";
+import { LocalStorage } from "@raycast/api";
+import { Link } from "../types";
+
+async function getApiConfig() {
+  const host = await LocalStorage.getItem<string>("host");
+  const token = await LocalStorage.getItem<string>("token");
+  if (!host || !token) {
+    throw new Error("API configuration is not initialized");
+  }
+  return { host, token };
+}
+
+interface ExtendedRequestOptions extends https.RequestOptions {
+  body?: any;
+}
+
+async function fetchWithAuth(
+  path: string,
+  options: ExtendedRequestOptions = {}
+): Promise<any> {
+  const { host, token } = await getApiConfig();
+  const url = new URL(path, host);
+  return new Promise((resolve, reject) => {
+    const requestOptions: https.RequestOptions = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: options.method || "GET",
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+        "User-Agent": "Raycast Extension",
+      },
+    };
+
+    const req = https.request(requestOptions, (res) => {
+      console.log("响应状态码:", res.statusCode);
+      console.log("响应头:", res.headers);
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(JSON.parse(data));
+          } catch {
+            resolve(data);
+          }
+        } else {
+          console.log("[返回错误]", res.statusCode, data);
+          reject(
+            new Error(`HTTP error! status: ${res.statusCode}, body: ${data}`)
+          );
+        }
+      });
+    });
+
+    req.on("error", (error) => {
+      console.error("请求错误:", error);
+      reject(error);
+    });
+
+    if (options.body) {
+      const bodyData = JSON.stringify(options.body);
+      req.write(bodyData);
+      console.log("请求体:", bodyData);
+    }
+
+    req.end();
+  });
+}
+
+export async function fetchLinks(cursor?: string) {
+  const path = cursor
+    ? `/api/link/list?cursor=${cursor}&limit=500`
+    : "/api/link/list";
+  return fetchWithAuth(path);
+}
+
+export async function fetchLinkBySlug(slug: string): Promise<Link | null> {
+  try {
+    return await fetchWithAuth(`/api/link/query?slug=${slug}`);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("404")) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function createLink(url: string, slug?: string): Promise<Link> {
+  return fetchWithAuth("/api/link/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: { url, slug },
+  });
+}
+
+export async function queryLink(slug: string): Promise<Link | null> {
+  return fetchLinkBySlug(slug);
+}
+
+interface LinkListResponse {
+  cursor?: string;
+  // 其他可能的字段
+}
+
+export async function checkTokenValid(
+  host: string,
+  token: string
+): Promise<boolean> {
+  const url = new URL("/api/link/list?limit=1", host);
+
+  return new Promise((resolve) => {
+    const req = https.request(
+      {
+        hostname: url.hostname,
+        path: url.pathname + url.search,
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+      (res) => {
+        let data = "";
+        res.on("data", (chunk) => (data += chunk));
+        res.on("end", () => {
+          if (res.statusCode === 200) {
+            try {
+              const response: LinkListResponse = JSON.parse(data);
+              resolve("cursor" in response);
+            } catch (error) {
+              console.error("解析响应时出错:", error);
+              resolve(false);
+            }
+          } else {
+            resolve(false);
+          }
+        });
+      }
+    );
+
+    req.on("error", (error) => {
+      console.error("验证令牌时出错:", error);
+      resolve(false);
+    });
+
+    req.end();
+  });
+}
+
+export function setApiConfig(config: { host: string; token: string }) {
+  LocalStorage.setItem("host", config.host);
+  LocalStorage.setItem("token", config.token);
+}
