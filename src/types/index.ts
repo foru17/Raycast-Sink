@@ -7,12 +7,6 @@ export interface Link {
   comment?: string;
 }
 
-export interface ListResponse {
-  list_complete: boolean;
-  cursor: string;
-  links: Link[];
-}
-
 export interface Preferences {
   language: "en" | "zh";
   showWebsitePreview: boolean;

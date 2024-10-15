@@ -37,6 +37,10 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
   const [isConfigValid, setIsConfigValid] = useState<boolean | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [originalConfig, setOriginalConfig] = useState<Config | null>(null);
+  const [lastValidatedConfig, setLastValidatedConfig] = useState<Config | null>(
+    null
+  );
+  const [isConfigChanged, setIsConfigChanged] = useState(false);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -48,6 +52,12 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         );
         const savedLanguage =
           (await LocalStorage.getItem<string>("language")) || "en";
+        const savedValidationStatus = await LocalStorage.getItem<string>(
+          "configValidationStatus"
+        );
+        const savedLastValidatedConfig = await LocalStorage.getItem<string>(
+          "lastValidatedConfig"
+        );
 
         const loadedConfig = {
           host,
@@ -58,7 +68,24 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         setConfig(loadedConfig);
         setOriginalConfig(loadedConfig);
         setLanguage(savedLanguage as "en" | "zh");
-        setIsConfigValid(null);
+
+        if (savedLastValidatedConfig) {
+          const parsedLastValidatedConfig = JSON.parse(
+            savedLastValidatedConfig
+          );
+          setLastValidatedConfig(parsedLastValidatedConfig);
+
+          if (
+            loadedConfig.host === parsedLastValidatedConfig.host &&
+            loadedConfig.token === parsedLastValidatedConfig.token
+          ) {
+            setIsConfigValid(savedValidationStatus === "valid");
+          } else {
+            setIsConfigValid(null);
+          }
+        } else {
+          setIsConfigValid(null);
+        }
       } catch (error) {
         console.error("Load config failed:", error);
       } finally {
@@ -73,22 +100,34 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
     setConfig((prevConfig) => ({ ...prevConfig, language }));
   }, [language]);
 
+  useEffect(() => {
+    if (originalConfig) {
+      setIsConfigChanged(
+        config.host !== originalConfig.host ||
+          config.token !== originalConfig.token
+      );
+    }
+  }, [config, originalConfig]);
+
   async function verifyConfiguration(
     host: string,
     token: string
   ): Promise<boolean> {
-    if (!host || !token) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: t.configurationIncomplete,
-      });
-      return false;
-    }
-
     setIsValidating(true);
     try {
       const isValid = await checkTokenValid(host, token);
       setIsConfigValid(isValid);
+      await LocalStorage.setItem(
+        "configValidationStatus",
+        isValid ? "valid" : "invalid"
+      );
+      const newValidatedConfig = { ...config, host, token };
+      setLastValidatedConfig(newValidatedConfig);
+      await LocalStorage.setItem(
+        "lastValidatedConfig",
+        JSON.stringify(newValidatedConfig)
+      );
+
       await showToast({
         style: isValid ? Toast.Style.Success : Toast.Style.Failure,
         title: isValid
@@ -99,6 +138,7 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
     } catch (error) {
       console.error("Verify config failed:", error);
       setIsConfigValid(false);
+      await LocalStorage.setItem("configValidationStatus", "invalid");
       await showToast({
         style: Toast.Style.Failure,
         title: t.configurationValidationFailed,
@@ -136,6 +176,9 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
       setConfig(values);
       setLanguage(values.language as "en" | "zh");
       setIsConfigValid(true);
+      // 更新缓存的验证状态
+      await LocalStorage.setItem("configValidationStatus", "valid");
+      await LocalStorage.setItem("lastValidatedConfig", JSON.stringify(values));
       onConfigured(true);
 
       await showToast({
@@ -174,12 +217,14 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         title={t.configurationStatus}
         text={
           isValidating
-            ? `${t.validating} 🔄` || "Validating"
+            ? `${t.validating} 🔄`
+            : isConfigChanged
+            ? `${t.toBeValidated} ❗`
             : isConfigValid === null
-            ? `${t.notValidated} ❗` || "Not Validated"
+            ? `${t.toBeValidated} ❗`
             : isConfigValid
-            ? `${t.valid} ✅` || "Valid"
-            : `${t.invalid} ❌` || "Invalid"
+            ? `${t.valid} ✅`
+            : `${t.invalid} ❌`
         }
       />
       <Form.TextField

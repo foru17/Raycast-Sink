@@ -16,7 +16,7 @@ export function LinkListView() {
   const { t } = useTranslation();
   const { config, isLoading: isConfigLoading, updateConfig } = useConfig();
 
-  if (isLinksLoading || isConfigLoading) {
+  if (isLinksLoading || isConfigLoading || !config) {
     return <List isLoading={true} />;
   }
   const validLinks = links.filter(

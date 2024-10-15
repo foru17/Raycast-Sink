@@ -2,14 +2,14 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "raycast-sink",
   "title": "Sink Short Links Manager",
-  "description": "Search, create, and manage your short links with Sink",
+  "description": "Create, search, and manage short links using Sink",
   "icon": "sink.png",
   "categories": [
-    "Other",
+    "Web",
     "Productivity"
   ],
   "license": "MIT",
-  "author": "@foru17",
+  "author": "luolei",
   "commands": [
     {
       "name": "sink",
@@ -48,7 +48,7 @@
     {
       "name": "language",
       "title": "Language",
-      "description": "Choose your preferred language",
+      "description": "Select your preferred language",
       "type": "dropdown",
       "data": [
         {
@@ -65,7 +65,7 @@
     {
       "name": "showWebsitePreview",
       "title": "Show Website Preview Icon",
-      "description": "Display website preview images in the list",
+      "description": "Display website preview icon in the list",
       "type": "checkbox",
       "default": true
     },
@@ -75,7 +75,7 @@
       "required": true,
       "title": "API Host",
       "description": "Enter the API host UR",
-      "placeholder": "https://sink.cool",
+      "placeholder": "https://your-sink-instance.com",
       "default": "https://sink.cool"
     },
     {
@@ -84,7 +84,7 @@
       "required": true,
       "title": "API Token",
       "description": "Enter your API token",
-      "placeholder": "Please enter your API token",
+      "placeholder": "Enter your Sink API authentication token",
       "default": "SinkCool"
     }
   ]

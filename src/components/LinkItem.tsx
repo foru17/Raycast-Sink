@@ -21,7 +21,7 @@ export function LinkItem({
   onCleanCache,
   updateConfig,
 }: LinkItemProps) {
-  const t = useTranslation();
+  const { t } = useTranslation();
 
   const BASE_URL = config?.host;
   const showWebsitePreview =

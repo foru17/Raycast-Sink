@@ -118,7 +118,7 @@ export async function checkTokenValid(
         res.on("end", () => {
           if (res.statusCode === 200) {
             try {
-              const response: LinkListResponse = JSON.parse(data);
+              const response = JSON.parse(data);
               resolve("cursor" in response);
             } catch (error) {
               resolve(false);
@@ -153,11 +153,7 @@ export async function deleteLink(slug: string): Promise<void> {
   });
 }
 
-export async function editLink(
-  slug: string,
-  url: string,
-  comment?: string
-): Promise<Link> {
+export async function editLink(slug: string, url: string, comment?: string) {
   return fetchWithAuth("/api/link/edit", {
     method: "PUT",
     headers: {

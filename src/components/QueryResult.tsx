@@ -10,7 +10,7 @@ interface QueryResultProps {
 }
 
 export function QueryResult({ link, isLoading, error }: QueryResultProps) {
-  const t = useTranslation();
+  const { t } = useTranslation();
   const { config } = useConfig();
   const BASE_URL = config?.host;
   if (isLoading) {
