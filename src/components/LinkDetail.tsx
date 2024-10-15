@@ -21,13 +21,31 @@ interface LinkDetailProps {
 }
 
 export function LinkDetail({ link, onRefresh }: LinkDetailProps) {
-  const { push } = useNavigation();
+  const { push, pop } = useNavigation();
   const { t } = useTranslation();
   const { config } = useConfig();
   const managerUrl = `${config?.host}/dashboard/link??slug=${link.slug}`;
   const shortLink = `${config?.host}/${link.slug}`;
   const handleEditSuccess = (updatedLink: Link) => {
     onRefresh();
+  };
+
+  const handleDelete = () => {
+    try {
+      deleteLink(link.slug).then(() => {
+        onRefresh();
+        pop();
+        showToast({
+          title: t.deleteSuccess,
+          message: t.deleteSuccess,
+        });
+      });
+    } catch (error) {
+      showToast({
+        title: t.deleteFailed,
+        message: t.deleteFailed,
+      });
+    }
   };
 
   const markdown = `
@@ -84,7 +102,12 @@ ${managerUrl}
                 <EditLinkView link={link} onEditSuccess={handleEditSuccess} />
               }
             />
-            {/* 其他操作... */}
+
+            <Action
+              icon={Icon.Trash}
+              title={t.deleteLink}
+              onAction={handleDelete}
+            />
           </ActionPanel.Section>
         </ActionPanel>
       }

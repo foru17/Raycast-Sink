@@ -1,7 +1,6 @@
 import https from "https";
 import { URL } from "url";
 import { LocalStorage } from "@raycast/api";
-import { Link } from "../types";
 
 async function getApiConfig() {
   const host = await LocalStorage.getItem<string>("host");
@@ -72,7 +71,7 @@ export async function fetchLinks(cursor?: string) {
   return fetchWithAuth(path);
 }
 
-export async function fetchLinkBySlug(slug: string): Promise<Link | null> {
+export async function fetchLinkBySlug(slug: string) {
   try {
     return await fetchWithAuth(`/api/link/query?slug=${slug}`);
   } catch (error) {
@@ -83,11 +82,7 @@ export async function fetchLinkBySlug(slug: string): Promise<Link | null> {
   }
 }
 
-export async function createLink(
-  url: string,
-  slug?: string,
-  comment?: string
-): Promise<Link> {
+export async function createLink(url: string, slug?: string, comment?: string) {
   return fetchWithAuth("/api/link/create", {
     method: "POST",
     headers: {
@@ -97,13 +92,8 @@ export async function createLink(
   });
 }
 
-export async function queryLink(slug: string): Promise<Link | null> {
+export async function queryLink(slug: string) {
   return fetchLinkBySlug(slug);
-}
-
-interface LinkListResponse {
-  cursor?: string;
-  // 其他可能的字段
 }
 
 export async function checkTokenValid(
