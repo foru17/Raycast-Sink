@@ -60,7 +60,7 @@ export function LinkItem({
             title={t.openTargetUrl || "Open Target URL"}
           />
           <Action.CopyToClipboard
-            content={`${BASE_URL}/${link.slug}`}
+            content={`${BASE_URL}${link.slug}`}
             title={t.copyShortLink || "Copy Short Link"}
           />
           <Action

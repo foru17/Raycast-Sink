@@ -76,7 +76,7 @@
       "title": "API Host",
       "description": "Enter the API host UR",
       "placeholder": "https://sink.cool",
-      "default": "https://sink.cool/"
+      "default": "https://sink.cool"
     },
     {
       "name": "token",
