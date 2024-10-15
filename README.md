@@ -8,6 +8,21 @@ A Raycast extension for effortlessly managing short links using [Sink](https://g
 
 ![Raycast Sink Intro](./docs/images/raycast-sink-intro.png)
 
+## Installation
+
+### Raycast Store
+
+- [ ] ⏳ Waiting for the Raycast team to review and publish it.
+
+### Manual Installation
+
+```bash
+git clone https://github.com/foru17/raycast-sink.git
+cd raycast-sink
+npm install && npm run dev
+# Enjoy it
+```
+
 ## Features
 
 - **View, Create, Search, and Query** short links directly within Raycast
