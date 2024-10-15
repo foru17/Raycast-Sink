@@ -12,7 +12,7 @@ A Raycast extension for effortlessly managing short links using [Sink](https://g
 
 ### Raycast Store
 
-- [ ] ⏳ Waiting for the Raycast team to review and publish it.
+- [ ] ⏳ Waiting Raycast team to review.
 
 ### Manual Installation
 
