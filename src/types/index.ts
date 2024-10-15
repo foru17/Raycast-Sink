@@ -4,6 +4,7 @@ export interface Link {
   slug: string;
   createdAt: number;
   updatedAt: number;
+  comment?: string;
 }
 
 export interface ListResponse {

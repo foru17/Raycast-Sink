@@ -1,9 +1,10 @@
-import { List, LocalStorage } from "@raycast/api";
-import { useState, useEffect } from "react";
+import { List, ActionPanel, Action, Icon } from "@raycast/api";
 import { useLinks } from "../hooks/useLinks";
-import { LinkItem } from "./LinkItem";
 import { useTranslation } from "../hooks/useTranslation";
 import { useConfig } from "../hooks/useConfig";
+import { Link } from "../types";
+import { LinkDetail } from "./LinkDetail";
+import { LinkItem } from "./LinkItem";
 
 export function LinkListView() {
   const {
@@ -15,28 +16,38 @@ export function LinkListView() {
   const { t } = useTranslation();
   const { config, isLoading: isConfigLoading, updateConfig } = useConfig();
 
-  const listTitle = `${t.linkListCount} (${links?.length || 0})`;
-  if (isConfigLoading) {
+  if (isLinksLoading || isConfigLoading) {
     return <List isLoading={true} />;
+  }
+  const validLinks = links.filter(
+    (link): link is Link =>
+      link != null && typeof link === "object" && "id" in link
+  );
+
+  if (validLinks.length === 0) {
+    return (
+      <List>
+        <List.EmptyView
+          title={t.noLinks || "No Links"}
+          description={t.createLinkDescription || "Create a new short link"}
+          icon="🔗"
+        />
+      </List>
+    );
   }
 
   return (
-    <List
-      isLoading={isLinksLoading}
-      searchBarPlaceholder={t.searchBarPlaceholder}
-      throttle>
-      <List.Section title={listTitle}>
-        {links.map((link) => (
-          <LinkItem
-            key={link.id}
-            link={link}
-            config={config}
-            onRefresh={refreshLinks}
-            onCleanCache={cleanCache}
-            updateConfig={updateConfig}
-          />
-        ))}
-      </List.Section>
+    <List isLoading={isLinksLoading}>
+      {validLinks.map((link) => (
+        <LinkItem
+          key={link.id}
+          link={link}
+          config={config}
+          onRefresh={refreshLinks}
+          onCleanCache={cleanCache}
+          updateConfig={updateConfig}
+        />
+      ))}
     </List>
   );
 }

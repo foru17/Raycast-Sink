@@ -46,7 +46,6 @@ export function LinkItem({
       }
       actions={
         <ActionPanel>
-          {/* 增加前往链接详情信息页快捷按钮 */}
           <Action.Push
             target={<LinkDetail link={link} onRefresh={onRefresh} />}
             title={t.viewLinkDetails || "View Link Details"}

@@ -83,13 +83,17 @@ export async function fetchLinkBySlug(slug: string): Promise<Link | null> {
   }
 }
 
-export async function createLink(url: string, slug?: string): Promise<Link> {
+export async function createLink(
+  url: string,
+  slug?: string,
+  comment?: string
+): Promise<Link> {
   return fetchWithAuth("/api/link/create", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: { url, slug },
+    body: { url, slug, comment },
   });
 }
 
@@ -147,4 +151,28 @@ export async function checkTokenValid(
 export function setApiConfig(config: { host: string; token: string }) {
   LocalStorage.setItem("host", config.host);
   LocalStorage.setItem("token", config.token);
+}
+
+export async function deleteLink(slug: string): Promise<void> {
+  await fetchWithAuth("/api/link/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: { slug },
+  });
+}
+
+export async function editLink(
+  slug: string,
+  url: string,
+  comment?: string
+): Promise<Link> {
+  return fetchWithAuth("/api/link/edit", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: { slug, url, comment },
+  });
 }
