@@ -59,7 +59,7 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         setLanguage(savedLanguage as "en" | "zh");
         setIsConfigValid(null);
       } catch (error) {
-        console.error("加载配置时出错:", error);
+        console.error("Load config failed:", error);
       } finally {
         setIsLoading(false);
       }
@@ -86,7 +86,6 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
 
     setIsValidating(true);
     try {
-      console.log("开始验证", host, token);
       const isValid = await checkTokenValid(host, token);
       setIsConfigValid(isValid);
       await showToast({
@@ -97,7 +96,7 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
       });
       return isValid;
     } catch (error) {
-      console.error("配置验证失败:", error);
+      console.error("Verify config failed:", error);
       setIsConfigValid(false);
       await showToast({
         style: Toast.Style.Failure,
@@ -172,12 +171,12 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         title={t.configurationStatus}
         text={
           isValidating
-            ? t.validating || "Validating"
+            ? `${t.validating} 🔄` || "Validating"
             : isConfigValid === null
-            ? t.notValidated || "Not Validated"
+            ? `${t.notValidated} ❗` || "Not Validated"
             : isConfigValid
-            ? t.valid || "Valid"
-            : t.invalid || "Invalid"
+            ? `${t.valid} ✅` || "Valid"
+            : `${t.invalid} ❌` || "Invalid"
         }
       />
       <Form.TextField

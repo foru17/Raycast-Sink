@@ -1,28 +1,34 @@
-import { List, ActionPanel, Action, Icon } from "@raycast/api";
+import { List, ActionPanel, Action, Icon, Image } from "@raycast/api";
 import { Link } from "../types";
 import { useTranslation } from "../hooks/useTranslation";
 import { useConfig } from "../hooks/useConfig";
+import { URL } from "url";
+import { LinkDetail } from "./LinkDetail";
+import { Config } from "../types";
 
 interface LinkItemProps {
   link: Link;
-  showWebsitePreview: boolean;
+  config: Config;
   onRefresh: () => void;
   onCleanCache: () => void;
+  updateConfig: (newConfig: Partial<Config>) => void;
 }
 
 export function LinkItem({
   link,
-  showWebsitePreview,
+  config,
   onRefresh,
   onCleanCache,
+  updateConfig,
 }: LinkItemProps) {
   const t = useTranslation();
-  const { config } = useConfig();
+
   const BASE_URL = config?.host;
+  const showWebsitePreview =
+    config?.showWebsitePreview === "true" ? true : false;
   const rightAccessories: List.Item.Accessory[] = [
     { text: new Date(link.createdAt * 1000).toLocaleDateString() },
   ];
-
   return (
     <List.Item
       title={`${link.slug}`}
@@ -34,12 +40,18 @@ export function LinkItem({
               source: `https://unavatar.io/${
                 new URL(link.url).hostname
               }?fallback=https://sink.cool/sink.png`,
-              mask: Icon.Mask.RoundedRectangle,
+              mask: Image.Mask.Circle,
             }
           : Icon.Link
       }
       actions={
         <ActionPanel>
+          {/* 增加前往链接详情信息页快捷按钮 */}
+          <Action.Push
+            target={<LinkDetail link={link} onRefresh={onRefresh} />}
+            title={t.viewLinkDetails || "View Link Details"}
+          />
+
           <Action.OpenInBrowser
             url={`${BASE_URL}/${link.slug}`}
             title={t.openShortLink || "Open Short Link"}

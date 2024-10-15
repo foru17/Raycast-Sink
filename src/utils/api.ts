@@ -35,8 +35,6 @@ async function fetchWithAuth(
     };
 
     const req = https.request(requestOptions, (res) => {
-      console.log("响应状态码:", res.statusCode);
-      console.log("响应头:", res.headers);
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
@@ -47,7 +45,6 @@ async function fetchWithAuth(
             resolve(data);
           }
         } else {
-          console.log("[返回错误]", res.statusCode, data);
           reject(
             new Error(`HTTP error! status: ${res.statusCode}, body: ${data}`)
           );
@@ -56,14 +53,12 @@ async function fetchWithAuth(
     });
 
     req.on("error", (error) => {
-      console.error("请求错误:", error);
       reject(error);
     });
 
     if (options.body) {
       const bodyData = JSON.stringify(options.body);
       req.write(bodyData);
-      console.log("请求体:", bodyData);
     }
 
     req.end();
@@ -132,7 +127,6 @@ export async function checkTokenValid(
               const response: LinkListResponse = JSON.parse(data);
               resolve("cursor" in response);
             } catch (error) {
-              console.error("解析响应时出错:", error);
               resolve(false);
             }
           } else {
@@ -143,7 +137,6 @@ export async function checkTokenValid(
     );
 
     req.on("error", (error) => {
-      console.error("验证令牌时出错:", error);
       resolve(false);
     });
 

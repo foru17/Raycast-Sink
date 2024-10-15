@@ -9,6 +9,7 @@ import {
   Toast,
   useNavigation,
   Form,
+  getPreferenceValues,
 } from "@raycast/api";
 import { useTranslation } from "./hooks/useTranslation";
 import { useLinks } from "./hooks/useLinks";
@@ -20,6 +21,15 @@ import { createLink, queryLink } from "./utils/api";
 
 type View = "main" | "list" | "detail" | "config" | "create" | "query";
 
+interface Preferences {
+  host: string;
+  token: string;
+  showWebsitePreview: boolean;
+  language: string;
+}
+
+const CONFIG_INITIALIZED_KEY = "config_initialized";
+
 function MainContent() {
   const [view, setView] = useState<View>("main");
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
@@ -28,18 +38,42 @@ function MainContent() {
   const { push } = useNavigation();
 
   useEffect(() => {
-    async function checkConfig() {
-      const host = await LocalStorage.getItem<string>("host");
-      const token = await LocalStorage.getItem<string>("token");
-      const language = await LocalStorage.getItem<string>("language");
-      const showWebsitePreview = await LocalStorage.getItem<boolean>(
-        "showWebsitePreview"
-      );
-      if (!host || !token || !language || showWebsitePreview === null) {
-        setView("config");
+    async function initializeConfig() {
+      try {
+        const initialized = await LocalStorage.getItem(CONFIG_INITIALIZED_KEY);
+
+        if (!initialized) {
+          // 首次使用，从 Raycast preferences 读取初始值
+          const preferences = getPreferenceValues<Preferences>();
+          await LocalStorage.setItem("host", preferences.host);
+          await LocalStorage.setItem("token", preferences.token);
+          await LocalStorage.setItem("showWebsitePreview", "true");
+          await LocalStorage.setItem("language", "en");
+          await LocalStorage.setItem(CONFIG_INITIALIZED_KEY, "true");
+        }
+
+        // 检查配置是否完整
+        const host = await LocalStorage.getItem<string>("host");
+        const token = await LocalStorage.getItem<string>("token");
+
+        if (!host || !token) {
+          setView("config");
+          await showToast({
+            style: Toast.Style.Failure,
+            title: t.configIncomplete,
+            message: t.pleaseConfigureHostAndToken,
+          });
+        }
+      } catch (error) {
+        await showToast({
+          style: Toast.Style.Failure,
+          title: t.configLoadFailed,
+          message: error instanceof Error ? error.message : t.unknownError,
+        });
       }
     }
-    checkConfig();
+
+    initializeConfig();
   }, []);
 
   if (view === "config") {
@@ -60,7 +94,6 @@ function MainContent() {
   async function handleCreateLink(url: string, slug?: string) {
     try {
       const newLink = await createLink(url, slug);
-      console.log("newLink", newLink);
       await showToast({
         style: Toast.Style.Success,
         title: t.linkCreated,

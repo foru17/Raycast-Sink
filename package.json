@@ -74,7 +74,7 @@
       "type": "textfield",
       "required": true,
       "title": "API Host",
-      "description": "Enter the API host URL"
+      "description": "Enter the API host URL(e.g. https://sink.cool)"
     },
     {
       "name": "token",

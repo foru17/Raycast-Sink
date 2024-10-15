@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
-import { LocalStorage } from "@raycast/api";
+import {
+  LocalStorage,
+  getPreferenceValues,
+  showToast,
+  Toast,
+} from "@raycast/api";
 
-interface Config {
+import { Config } from "../types";
+
+interface Preferences {
   host: string;
   token: string;
-  showWebsitePreview: boolean;
+  showWebsitePreview: string;
   language: string;
 }
+
+const CONFIG_INITIALIZED_KEY = "config_initialized";
 
 export function useConfig() {
   const [config, setConfig] = useState<Config | null>(null);
@@ -15,22 +24,44 @@ export function useConfig() {
   useEffect(() => {
     async function loadConfig() {
       try {
-        const host = (await LocalStorage.getItem<string>("host")) || "";
-        const token = (await LocalStorage.getItem<string>("token")) || "";
-        const showWebsitePreview = await LocalStorage.getItem<string>(
-          "showWebsitePreview"
-        );
-        const language =
-          (await LocalStorage.getItem<string>("language")) || "en";
+        // 检查是否已初始化
+        const initialized = await LocalStorage.getItem(CONFIG_INITIALIZED_KEY);
 
-        setConfig({
-          host,
-          token,
-          showWebsitePreview: showWebsitePreview === "true",
-          language,
-        });
+        if (!initialized) {
+          // 首次使用，从 Raycast preferences 读取初始值
+          const preferences = getPreferenceValues<Preferences>();
+          await LocalStorage.setItem("host", preferences.host);
+          await LocalStorage.setItem("token", preferences.token);
+          await LocalStorage.setItem(CONFIG_INITIALIZED_KEY, "true");
+        }
+
+        // 从 LocalStorage 读取配置
+        const newConfig: Config = {
+          host: (await LocalStorage.getItem<string>("host")) || "",
+          token: (await LocalStorage.getItem<string>("token")) || "",
+          showWebsitePreview:
+            (await LocalStorage.getItem<string>("showWebsitePreview")) ||
+            "true",
+          language: (await LocalStorage.getItem<string>("language")) || "en",
+        };
+
+        setConfig(newConfig);
+
+        // 检查配置是否完整
+        if (!newConfig.host || !newConfig.token) {
+          await showToast({
+            style: Toast.Style.Failure,
+            title: "Configuration incomplete",
+            message: "Please fill in Host and Token in the plugin settings",
+          });
+        }
       } catch (error) {
-        console.error("Error loading config:", error);
+        console.error(":", error);
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "Load config failed",
+          message: "Please check network connection or restart the app",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -44,16 +75,11 @@ export function useConfig() {
       const updatedConfig = { ...config, ...newConfig };
       setConfig(updatedConfig);
 
-      // 更新 LocalStorage
-      await Promise.all([
-        LocalStorage.setItem("host", updatedConfig.host),
-        LocalStorage.setItem("token", updatedConfig.token),
-        LocalStorage.setItem(
-          "showWebsitePreview",
-          updatedConfig.showWebsitePreview.toString()
-        ),
-        LocalStorage.setItem("language", updatedConfig.language),
-      ]);
+      await Promise.all(
+        Object.entries(updatedConfig).map(([key, value]) =>
+          LocalStorage.setItem(key, value.toString())
+        )
+      );
     }
   };
 
