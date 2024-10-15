@@ -24,11 +24,9 @@ export function useConfig() {
   useEffect(() => {
     async function loadConfig() {
       try {
-        // 检查是否已初始化
         const initialized = await LocalStorage.getItem(CONFIG_INITIALIZED_KEY);
 
         if (!initialized) {
-          // 首次使用，从 Raycast preferences 读取初始值
           const preferences = getPreferenceValues<Preferences>();
           await LocalStorage.setItem("host", preferences.host);
           await LocalStorage.setItem("token", preferences.token);

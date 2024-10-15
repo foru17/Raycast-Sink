@@ -74,14 +74,18 @@
       "type": "textfield",
       "required": true,
       "title": "API Host",
-      "description": "Enter the API host URL(e.g. https://sink.cool)"
+      "description": "Enter the API host UR",
+      "placeholder": "https://sink.cool",
+      "default": "https://sink.cool/"
     },
     {
       "name": "token",
       "type": "textfield",
       "required": true,
       "title": "API Token",
-      "description": "Enter your API token"
+      "description": "Enter your API token",
+      "placeholder": "Please enter your API token",
+      "default": "SinkCool"
     }
   ]
 }

@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { setApiConfig, checkTokenValid } from "../utils/api";
 import { useTranslation } from "../hooks/useTranslation";
+import { setCachedLinks } from "../utils/cache";
 
 interface ConfigViewProps {
   onConfigured: (isConfigured: boolean) => void;
@@ -128,7 +129,9 @@ export function ConfigView({ onConfigured }: ConfigViewProps) {
         values.showWebsitePreview.toString()
       );
       await LocalStorage.setItem("language", values.language);
-
+      if (hostChanged) {
+        await setCachedLinks([]);
+      }
       setApiConfig({ host: values.host, token: values.token });
       setConfig(values);
       setLanguage(values.language as "en" | "zh");
