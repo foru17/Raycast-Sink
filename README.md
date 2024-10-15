@@ -37,12 +37,6 @@ Before you begin, ensure you have the following:
 - A deployed Sink instance (follow the [Sink deployment instructions](https://github.com/ccbikai/sink#%EF%B8%8F-deployment))
 - Sink API credentials (obtain these from your Sink instance)
 
-## Installation
-
-1. Open Raycast and navigate to the Store
-2. Search for "Sink" and install the extension
-3. Follow the prompts to configure your Sink API credentials
-
 ## Configuration
 
 After installation, you'll need to set up the extension with your Sink instance details:
@@ -96,8 +90,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you find this extension helpful, consider:
 
-- Starring the [GitHub repository](https://github.com/yourusername/raycast-sink)
+- Starring the [GitHub repository](https://github.com/foru17/raycast-sink)
 - Sharing it with others who might find it useful
-- [Buying me a coffee](https://www.buymeacoffee.com/yourusername) to support ongoing development
 
 Your support helps keep this project active and improving!
