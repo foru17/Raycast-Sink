@@ -25,22 +25,25 @@ export default function LinkListView() {
     );
 
     const weighted = validLinks
-      .filter((link) => link.slug.toLowerCase().includes(searchText.toLowerCase()))
       .map((link) => {
         const slug = link.slug.toLowerCase();
+        const url = (link.url || "").toLowerCase();
         const search = searchText.toLowerCase();
         let weight = 0;
 
         if (slug === search) {
+          weight = 4;
+        } else if (slug.includes(search)) {
           weight = 3;
-        } else if (slug.startsWith(search)) {
+        } else if (url === search) {
           weight = 2;
-        } else {
+        } else if (url.includes(search)) {
           weight = 1;
         }
 
         return { link, weight };
       })
+      .filter(({ weight }) => weight > 0)
       .sort((a, b) => b.weight - a.weight)
       .map(({ link }) => link);
 
